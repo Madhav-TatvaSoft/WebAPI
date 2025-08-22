@@ -18,15 +18,14 @@ public class AuthController : ControllerBase
 {
     private readonly EmployeeDbContext _db;
     private readonly JWTService _jwtService;
-    private readonly TokenValidationParameters _tokenValidationParams;
+    private readonly IConfiguration _config;
 
-    public AuthController(EmployeeDbContext db, JWTService jwtService, TokenValidationParameters tokenValidationParams)
+    public AuthController(EmployeeDbContext db, JWTService jwtService, IConfiguration config)
     {
         _db = db;
         _jwtService = jwtService;
-        _tokenValidationParams = tokenValidationParams;
+        _config = config;
     }
-
 
     [HttpPost]
     [Route("register")]
@@ -91,28 +90,16 @@ public class AuthController : ControllerBase
             });
         }
 
-        CookieOptions option = new CookieOptions();
-        option.Expires = DateTime.Now.AddHours(30);
-
-        Response.Cookies.Append("AuthToken", token, option);
-
-        return Ok(new
+        Response.Cookies.Append("AuthToken", token, new CookieOptions
         {
-            Token = token,
-            Message = "Login successfully"
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_config["JwtConfig:Duration"]))
         });
-    }
 
-    private string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
-    }
+        return Ok(new { message = "Login successful", token });
 
-    private bool VerifyPassword(string password, string hashedPassword)
-    {
-        return HashPassword(password) == hashedPassword;
     }
 
     [HttpGet]
@@ -138,7 +125,9 @@ public class AuthController : ControllerBase
     [Route("validate")]
     public IActionResult ValidateToken()
     {
-        var token = Request.Cookies["AuthToken"];
+        var token = Request.Headers.Cookie.ToString().Split(';')
+            .FirstOrDefault(c => c.Trim().StartsWith("AuthToken="))?
+            .Split('=')[1];
 
         if (string.IsNullOrEmpty(token))
             return Unauthorized(new { message = "Token is missing" });
@@ -146,8 +135,13 @@ public class AuthController : ControllerBase
         var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
-            var principal = tokenHandler.ValidateToken(token, _tokenValidationParams, out var validatedToken);
-            return Ok(new { message = "Token is valid", user = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value });
+            // var principal = tokenHandler.ValidateToken(token, _tokenValidationParams, out var validatedToken);
+            // return Ok(new { message = "Token is valid", user = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value });
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            var username = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            var userId = jwt.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            return Ok(new { valid = true, username, userId });
         }
         catch (SecurityTokenExpiredException)
         {
@@ -159,12 +153,17 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpGet]
-    [Route("logout")]
-    public IActionResult Logout()
+    // Methods
+    private string HashPassword(string password)
     {
-        Response.Cookies.Delete("AuthToken");
-        return Ok(new { message = "Logged out successfully" });
+        using var sha256 = SHA256.Create();
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(hashedBytes);
     }
-    
+
+    private bool VerifyPassword(string password, string hashedPassword)
+    {
+        return HashPassword(password) == hashedPassword;
+    }
+
 }

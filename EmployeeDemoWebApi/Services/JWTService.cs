@@ -27,8 +27,8 @@ public class JWTService
         {
             new Claim("email", user.Email),
             new Claim("role", user.Role.Name),
-            new Claim(ClaimTypes.NameIdentifier,user.Username),
-            new Claim("id",user.Id.ToString()),
+            new Claim(ClaimTypes.Name,user.Username),
+            new Claim("UserId",user.Id.ToString()),
         };
 
         JwtSecurityToken token = new JwtSecurityToken(

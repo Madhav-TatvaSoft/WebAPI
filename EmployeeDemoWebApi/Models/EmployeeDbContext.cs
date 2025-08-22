@@ -17,6 +17,8 @@ public partial class EmployeeDbContext : DbContext
 
     public virtual DbSet<Employee> Employees { get; set; }
 
+    public virtual DbSet<ManageTask> ManageTasks { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -45,6 +47,36 @@ public partial class EmployeeDbContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("lastname");
             entity.Property(e => e.Phonenumber).HasColumnName("phonenumber");
+        });
+
+        modelBuilder.Entity<ManageTask>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("ManageTask_pkey");
+
+            entity.ToTable("ManageTask");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Category)
+                .HasMaxLength(30)
+                .HasColumnName("category");
+            entity.Property(e => e.Description)
+                .HasMaxLength(300)
+                .HasColumnName("description");
+            entity.Property(e => e.Duedate).HasColumnName("duedate");
+            entity.Property(e => e.Iscompleted).HasColumnName("iscompleted");
+            entity.Property(e => e.Isdeleted).HasColumnName("isdeleted");
+            entity.Property(e => e.Priority)
+                .HasMaxLength(20)
+                .HasColumnName("priority");
+            entity.Property(e => e.Title)
+                .HasMaxLength(100)
+                .HasColumnName("title");
+            entity.Property(e => e.Userid).HasColumnName("userid");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ManageTasks)
+                .HasForeignKey(d => d.Userid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("ManageTask_userid_fkey");
         });
 
         modelBuilder.Entity<Role>(entity =>

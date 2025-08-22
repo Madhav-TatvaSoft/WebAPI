@@ -15,5 +15,7 @@ public partial class User
 
     public int? Roleid { get; set; }
 
+    public virtual ICollection<ManageTask> ManageTasks { get; } = new List<ManageTask>();
+
     public virtual Role? Role { get; set; }
 }
