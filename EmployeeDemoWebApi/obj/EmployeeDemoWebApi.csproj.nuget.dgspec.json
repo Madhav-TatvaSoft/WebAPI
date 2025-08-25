@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\EmployeeDemoWebApi.csproj": {}
+    "D:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\EmployeeDemoWebApi.csproj": {}
   },
   "projects": {
-    "d:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\EmployeeDemoWebApi.csproj": {
+    "D:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\EmployeeDemoWebApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\EmployeeDemoWebApi.csproj",
+        "projectUniqueName": "D:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\EmployeeDemoWebApi.csproj",
         "projectName": "EmployeeDemoWebApi",
-        "projectPath": "d:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\EmployeeDemoWebApi.csproj",
+        "projectPath": "D:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\EmployeeDemoWebApi.csproj",
         "packagesPath": "C:\\Users\\pca155\\.nuget\\packages\\",
-        "outputPath": "d:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\obj\\",
+        "outputPath": "D:\\Projects\\Angular Projects\\CRUD_Demo\\EmployeeCRUD\\WebAPI\\EmployeeDemoWebApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pca155\\AppData\\Roaming\\NuGet\\NuGet.Config"
