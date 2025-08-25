@@ -23,9 +23,7 @@ public class TasksController : ControllerBase
 
     private int GetUserId()
     {
-        var token = Request.Headers.Cookie.ToString().Split(';')
-                    .FirstOrDefault(c => c.Trim().StartsWith("AuthToken="))?
-                    .Split('=')[1];
+        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         var userIdClaim = _jwtService.GetClaimValue(token, "UserId");
         if (userIdClaim == null)
         {
@@ -41,10 +39,10 @@ public class TasksController : ControllerBase
     public async Task<IActionResult> GetAllTasks()
     {
         var userId = GetUserId();
-        var tasks = await _context.ManageTasks.Where(t => t.Userid == userId && !t.Isdeleted).ToListAsync();
+        var tasks = await _context.ManageTasks.Where(t => t.Userid == userId && !t.Isdeleted).OrderBy(t => t.Id).ToListAsync();
         if (tasks == null || !tasks.Any())
         {
-            return Ok(new { TaskEntity = new List<ManageTask>(), Message = "No tasks found" });
+            return Ok(new List<ManageTask>());
         }
         return Ok(tasks);
     }

@@ -31,6 +31,11 @@ public class AuthController : ControllerBase
     [Route("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDTO request)
     {
+        if (request == null)
+        {
+            return BadRequest(new { message = "Invalid registration data" });
+        }
+
         if (await _db.Users.AnyAsync(u => u.Username.ToLower().Trim() == request.UserName.ToLower().Trim()))
         {
             return BadRequest(new { message = "Username already exists" });
@@ -67,6 +72,17 @@ public class AuthController : ControllerBase
     [Route("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDTO request)
     {
+        if (request == null)
+        {
+            return BadRequest(new LoginResponseDTO
+            {
+                Success = false,
+                Message = "Invalid login data",
+                Token = null,
+                User = null
+            });
+        }
+
         var user = await _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user == null || !VerifyPassword(request.Password, user.Password))
@@ -90,16 +106,12 @@ public class AuthController : ControllerBase
             });
         }
 
-        Response.Cookies.Append("AuthToken", token, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_config["JwtConfig:Duration"]))
-        });
+        CookieOptions option = new CookieOptions();
+        option.Expires = DateTime.Now.AddMinutes(Convert.ToInt32(_config["JwtConfig:Duration"]));
+
+        Response.Cookies.Append("AuthToken", token, option);
 
         return Ok(new { message = "Login successful", token });
-
     }
 
     [HttpGet]
@@ -125,9 +137,7 @@ public class AuthController : ControllerBase
     [Route("validate")]
     public IActionResult ValidateToken()
     {
-        var token = Request.Headers.Cookie.ToString().Split(';')
-            .FirstOrDefault(c => c.Trim().StartsWith("AuthToken="))?
-            .Split('=')[1];
+        var token = Request.Cookies["AuthToken"];
 
         if (string.IsNullOrEmpty(token))
             return Unauthorized(new { message = "Token is missing" });
@@ -153,6 +163,21 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost]
+    [Route("logout")]
+    public IActionResult Logout()
+    {
+        Console.WriteLine("Logout Called from API");
+        Response.Cookies.Append("AuthToken", "", new CookieOptions
+        {
+            Expires = DateTime.UtcNow.AddDays(-1),
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None
+        });
+        return Ok(new { message = "Logged out successfully" });
+    }
+
     // Methods
     private string HashPassword(string password)
     {
@@ -166,4 +191,8 @@ public class AuthController : ControllerBase
         return HashPassword(password) == hashedPassword;
     }
 
+}
+
+internal class HttpostAttribute : Attribute
+{
 }
